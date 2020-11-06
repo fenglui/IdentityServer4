@@ -2,6 +2,7 @@
 using IdentityModel.Client;
 using IdentityModel.OidcClient;
 using Microsoft.IdentityModel.Logging;
+using Serilog;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -71,9 +72,17 @@ namespace WindowsConsoleSystemBrowser
             {
                 Authority = Constants.Authority,
                 ClientId = "winconsole",
-                Scope = "openid profile api1",
+                Scope = "openid profile scope1",
                 RedirectUri = redirectUri,
             };
+
+            var serilog = new LoggerConfiguration()
+                  .MinimumLevel.Verbose()
+                  .Enrich.FromLogContext()
+                  .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message}{NewLine}{Exception}{NewLine}")
+                  .CreateLogger();
+
+            options.LoggerFactory.AddSerilog(serilog);
 
             var client = new OidcClient(options);
             var state = await client.PrepareLoginAsync();
@@ -110,7 +119,16 @@ namespace WindowsConsoleSystemBrowser
                 }
 
                 Console.WriteLine();
-                Console.WriteLine("Access token:\n{0}", result.AccessToken);
+
+                if (!string.IsNullOrEmpty(result.IdentityToken))
+                {
+                    Console.WriteLine("Identity token:\n{0}", result.IdentityToken);
+                }
+
+                if (!string.IsNullOrEmpty(result.AccessToken))
+                {
+                    Console.WriteLine("Access token:\n{0}", result.AccessToken);
+                }
 
                 if (!string.IsNullOrWhiteSpace(result.RefreshToken))
                 {

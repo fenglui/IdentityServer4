@@ -5,19 +5,21 @@ using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IdentityServer.UnitTests.Common;
+using IdentityServer4;
+using IdentityServer4.Configuration;
 using IdentityServer4.Endpoints;
 using IdentityServer4.Endpoints.Results;
 using IdentityServer4.Hosting;
 using IdentityServer4.Models;
 using IdentityServer4.ResponseHandling;
 using IdentityServer4.Services;
-using IdentityServer4.UnitTests.Common;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace IdentityServer4.UnitTests.Endpoints.Authorize
+namespace IdentityServer.UnitTests.Endpoints.Authorize
 {
     public class AuthorizeEndpointBaseTests
     {
@@ -28,6 +30,8 @@ namespace IdentityServer4.UnitTests.Endpoints.Authorize
         private TestEventService _fakeEventService = new TestEventService();
 
         private ILogger<TestAuthorizeEndpoint> _fakeLogger = TestLogger.Create<TestAuthorizeEndpoint>();
+
+        private IdentityServerOptions _options = new IdentityServerOptions();
 
         private MockUserSession _mockUserSession = new MockUserSession();
 
@@ -48,6 +52,25 @@ namespace IdentityServer4.UnitTests.Endpoints.Authorize
         public AuthorizeEndpointBaseTests()
         {
             Init();
+        }
+
+        [Fact]
+        [Trait("Category", Category)]
+        public async Task error_resurect_with_prompt_none_should_include_session_state_in_response()
+        {
+            _params.Add("prompt", "none");
+            _stubAuthorizeRequestValidator.Result.ValidatedRequest.IsOpenIdRequest = true;
+            _stubAuthorizeRequestValidator.Result.ValidatedRequest.ClientId = "client";
+            _stubAuthorizeRequestValidator.Result.ValidatedRequest.SessionId = "some_session";
+            _stubAuthorizeRequestValidator.Result.ValidatedRequest.RedirectUri = "http://redirect";
+            _stubAuthorizeRequestValidator.Result.IsError = true;
+            _stubAuthorizeRequestValidator.Result.Error = "login_required";
+
+            var result = await _subject.ProcessAuthorizeRequestAsync(_params, _user, null);
+
+            result.Should().BeOfType<AuthorizeResult>();
+            ((AuthorizeResult)result).Response.IsError.Should().BeTrue();
+            ((AuthorizeResult)result).Response.SessionState.Should().NotBeNull();
         }
 
         [Fact]
@@ -160,6 +183,7 @@ namespace IdentityServer4.UnitTests.Endpoints.Authorize
             _subject = new TestAuthorizeEndpoint(
                 _fakeEventService,
                 _fakeLogger,
+                _options,
                 _stubAuthorizeRequestValidator,
                 _stubInteractionGenerator,
                 _stubAuthorizeResponseGenerator,
@@ -171,11 +195,12 @@ namespace IdentityServer4.UnitTests.Endpoints.Authorize
             public TestAuthorizeEndpoint(
               IEventService events,
               ILogger<TestAuthorizeEndpoint> logger,
+              IdentityServerOptions options,
               IAuthorizeRequestValidator validator,
               IAuthorizeInteractionResponseGenerator interactionGenerator,
               IAuthorizeResponseGenerator authorizeResponseGenerator,
               IUserSession userSession)
-            : base(events, logger, validator, interactionGenerator, authorizeResponseGenerator, userSession)
+            : base(events, logger, options, validator, interactionGenerator, authorizeResponseGenerator, userSession)
             {
             }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
@@ -49,30 +49,30 @@ namespace IdentityServer4.EntityFramework.Stores
         /// <returns>
         /// The client
         /// </returns>
-        public virtual Task<Client> FindClientByIdAsync(string clientId)
+        public virtual async Task<Client> FindClientByIdAsync(string clientId)
         {
             IQueryable<Entities.Client> baseQuery = Context.Clients
-                .Where(x => x.ClientId == clientId)
-                .Take(1);
+                .Where(x => x.ClientId == clientId);
 
-            var client = baseQuery.FirstOrDefault();
-            if (client == null) return Task.FromResult<Client>(null);
+            var client = (await baseQuery.ToArrayAsync())
+                .SingleOrDefault(x => x.ClientId == clientId);
+            if (client == null) return null;
 
-            baseQuery.Include(x => x.AllowedCorsOrigins).SelectMany(c => c.AllowedCorsOrigins).Load();
-            baseQuery.Include(x => x.AllowedGrantTypes).SelectMany(c => c.AllowedGrantTypes).Load();
-            baseQuery.Include(x => x.AllowedScopes).SelectMany(c => c.AllowedScopes).Load();
-            baseQuery.Include(x => x.Claims).SelectMany(c => c.Claims).Load();
-            baseQuery.Include(x => x.ClientSecrets).SelectMany(c => c.ClientSecrets).Load();
-            baseQuery.Include(x => x.IdentityProviderRestrictions).SelectMany(c => c.IdentityProviderRestrictions).Load();
-            baseQuery.Include(x => x.PostLogoutRedirectUris).SelectMany(c => c.PostLogoutRedirectUris).Load();
-            baseQuery.Include(x => x.Properties).SelectMany(c => c.Properties).Load();
-            baseQuery.Include(x => x.RedirectUris).SelectMany(c => c.RedirectUris).Load();
+            await baseQuery.Include(x => x.AllowedCorsOrigins).SelectMany(c => c.AllowedCorsOrigins).LoadAsync();
+            await baseQuery.Include(x => x.AllowedGrantTypes).SelectMany(c => c.AllowedGrantTypes).LoadAsync();
+            await baseQuery.Include(x => x.AllowedScopes).SelectMany(c => c.AllowedScopes).LoadAsync();
+            await baseQuery.Include(x => x.Claims).SelectMany(c => c.Claims).LoadAsync();
+            await baseQuery.Include(x => x.ClientSecrets).SelectMany(c => c.ClientSecrets).LoadAsync();
+            await baseQuery.Include(x => x.IdentityProviderRestrictions).SelectMany(c => c.IdentityProviderRestrictions).LoadAsync();
+            await baseQuery.Include(x => x.PostLogoutRedirectUris).SelectMany(c => c.PostLogoutRedirectUris).LoadAsync();
+            await baseQuery.Include(x => x.Properties).SelectMany(c => c.Properties).LoadAsync();
+            await baseQuery.Include(x => x.RedirectUris).SelectMany(c => c.RedirectUris).LoadAsync();
 
             var model = client.ToModel();
 
             Logger.LogDebug("{clientId} found in database: {clientIdFound}", clientId, model != null);
 
-            return Task.FromResult(model);
+            return model;
         }
     }
 }

@@ -2,13 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
-using FluentAssertions;
-using IdentityModel;
-using IdentityModel.Client;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,9 +10,17 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
+using IdentityModel;
+using IdentityModel.Client;
+using IdentityServer.IntegrationTests.Clients.Setup;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace IdentityServer4.IntegrationTests.Clients
+namespace IdentityServer.IntegrationTests.Clients
 {
     public class ExtensionGrantClient
     {
@@ -68,7 +69,7 @@ namespace IdentityServer4.IntegrationTests.Clients
             exp.Should().BeLessThan(unixNow + 3605);
             exp.Should().BeGreaterThan(unixNow + 3595);
 
-            payload.Count().Should().Be(10);
+            payload.Count().Should().Be(12);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.custom");
             payload.Should().Contain("sub", "818727");
@@ -117,7 +118,7 @@ namespace IdentityServer4.IntegrationTests.Clients
             exp.Should().BeLessThan(unixNow + 3605);
             exp.Should().BeGreaterThan(unixNow + 3595);
 
-            payload.Count().Should().Be(11);
+            payload.Count().Should().Be(13);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.custom");
             payload.Should().Contain("sub", "818727");
@@ -184,7 +185,7 @@ namespace IdentityServer4.IntegrationTests.Clients
             exp.Should().BeLessThan(unixNow + 3605);
             exp.Should().BeGreaterThan(unixNow + 3595);
 
-            payload.Count().Should().Be(11);
+            payload.Count().Should().Be(13);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.custom");
             payload.Should().Contain("sub", "818727");
@@ -228,7 +229,7 @@ namespace IdentityServer4.IntegrationTests.Clients
 
             var payload = GetPayload(response);
 
-            payload.Count().Should().Be(6);
+            payload.Count().Should().Be(8);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.custom");
 
@@ -264,7 +265,7 @@ namespace IdentityServer4.IntegrationTests.Clients
 
             var payload = GetPayload(response);
 
-            payload.Count().Should().Be(10);
+            payload.Count().Should().Be(12);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.custom");
             payload.Should().Contain("sub", "818727");
@@ -527,7 +528,7 @@ namespace IdentityServer4.IntegrationTests.Clients
 
             var payload = GetPayload(response);
 
-            payload.Count().Should().Be(11);
+            payload.Count().Should().Be(13);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.dynamic");
             payload.Should().Contain("sub", "818727");
@@ -573,7 +574,7 @@ namespace IdentityServer4.IntegrationTests.Clients
 
             var payload = GetPayload(response);
 
-            payload.Count().Should().Be(7);
+            payload.Count().Should().Be(9);
             payload.Should().Contain("iss", "https://idsvr4");
             payload.Should().Contain("client_id", "client.dynamic");
             payload.Should().Contain("client_extra", "extra_claim");
